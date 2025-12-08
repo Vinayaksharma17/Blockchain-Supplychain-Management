@@ -43,6 +43,9 @@ N_ESTIMATORS = 100
 
 # Sample limit (None = all). Set small for quick runs while testing.
 SAMPLE_LIMIT = None
+
+# Custom IP for QR codes (leave None to auto-detect)
+CUSTOM_HOST_IP = "10.250.49.176" # Example: "192.168.1.5"
 # ----------------------------
 
 os.makedirs(QR_DIR, exist_ok=True)
@@ -75,13 +78,17 @@ def make_qr(url, save_path):
 print("🚀 AI + Blockchain Garment Project — START")
 
 # Determine host (for QR tracking links)
-lan = guess_lan_ip()
-if lan:
-    host_url = f"http://{lan}:8501"
-    print(f"Auto-detected LAN IP -> using host for QR/tracking: {host_url}")
+if CUSTOM_HOST_IP:
+    host_url = f"http://{CUSTOM_HOST_IP}:8501"
+    print(f"Using configured CUSTOM_HOST_IP -> {host_url}")
 else:
-    host_url = "http://localhost:8501"
-    print("Could not auto-detect LAN IP. Using localhost for tracking URLs (phone cannot reach localhost).")
+    lan = guess_lan_ip()
+    if lan:
+        host_url = f"http://{lan}:8501"
+        print(f"Auto-detected LAN IP -> using host for QR/tracking: {host_url}")
+    else:
+        host_url = "http://localhost:8501"
+        print("Could not auto-detect LAN IP. Using localhost for tracking URLs (phone cannot reach localhost).")
 print("Host for QR:", host_url)
 
 # Validate CSV

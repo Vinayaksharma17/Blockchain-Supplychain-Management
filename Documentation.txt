@@ -1,3 +1,6 @@
-python -m streamlit run app_streamlit_final2.py
+uvicorn backend.main:app --host 0.0.0.0 --port 8000
 
-python -m streamlit run app_streamlit_final2.py --server.port 8502
+cd frontend
+npm run dev -- --host
+
+python backend/qr_generator.py --ip <NEW_IP_ADDRESS>

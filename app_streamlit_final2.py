@@ -76,41 +76,120 @@ if status_filter != "All":
     df_filtered = df_filtered[df_filtered["predicted_status"].fillna("N/A")==status_filter]
 
 # layout
+# layout
+st.markdown("""
+<style>
+    .main {
+        background-color: #f8f9fa;
+    }
+    .stButton>button {
+        width: 100%;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        background-color: white;
+        color: #333;
+    }
+    .stButton>button:hover {
+        border-color: #007bff;
+        color: #007bff;
+    }
+    .product-card {
+        background-color: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        border: 1px solid #eee;
+    }
+    h1 {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #333;
+        font-weight: 700;
+        margin-bottom: 30px;
+    }
+    h3 {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #444;
+        font-weight: 600;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 st.markdown("<h1 style='text-align:center;'>GARMENT SCM — AI + Blockchain</h1>", unsafe_allow_html=True)
 left, right = st.columns([2,1])
 
 with left:
     st.subheader("Catalogue")
-    per_row = st.selectbox("Items per row", [2,3,4], index=2)
-    per_page = st.selectbox("Per page", [12, 24, 48], index=0)
-    page = st.number_input("Page", min_value=1, value=1, step=1)
-    start = (page-1)*per_page
+    
+    # Pagination controls
+    col_p1, col_p2, col_p3 = st.columns([1, 2, 1])
+    with col_p1:
+        per_page = st.selectbox("Per page", [12, 24, 48], index=0)
+    
+    # Calculate total pages
+    total_items = len(df_filtered)
+    total_pages = max(1, (total_items + per_page - 1) // per_page)
+    
+    if "page" not in st.session_state:
+        st.session_state.page = 1
+        
+    # Ensure page is valid
+    if st.session_state.page > total_pages:
+        st.session_state.page = total_pages
+    if st.session_state.page < 1:
+        st.session_state.page = 1
+        
+    with col_p2:
+        # Centered pagination info
+        st.write("") # Spacer
+        st.markdown(f"<div style='text-align: center; padding-top: 10px;'>Page <b>{st.session_state.page}</b> of <b>{total_pages}</b></div>", unsafe_allow_html=True)
+
+    with col_p3:
+        # Navigation buttons
+        c_prev, c_next = st.columns(2)
+        with c_prev:
+            if st.button("◀", key="prev_page", disabled=st.session_state.page <= 1):
+                st.session_state.page -= 1
+                st.rerun()
+        with c_next:
+            if st.button("▶", key="next_page", disabled=st.session_state.page >= total_pages):
+                st.session_state.page += 1
+                st.rerun()
+
+    start = (st.session_state.page-1)*per_page
     subset = df_filtered.iloc[start:start+per_page]
 
     # grid
+    per_row = 3 # Fixed to 3 for better consistency, or make selectable
     cols = st.columns(per_row)
     idx = 0
     for _, row in subset.iterrows():
         with cols[idx % per_row]:
-            # thumbnail
+            # Card container start
+            st.markdown(f"""
+            <div class="product-card">
+                <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 5px;">{row['name'][:50]}...</div>
+                <div style="color: #666; font-size: 0.9em; margin-bottom: 5px;">ID: <code>{row['id']}</code></div>
+                <div style="color: #888; font-size: 0.9em;">Color: {row.get('color','N/A')}</div>
+                <div style="color: #28a745; font-weight: bold; margin-top: 5px;">₹{row.get('price','N/A')}</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Image handling - ONLY show if exists
             img_path = resolve_path(UPLOADS, row.get("image_file"))
-            if img_path:
+            if img_path and os.path.exists(img_path):
                 try:
                     img = Image.open(img_path)
                     thumb = img.copy()
                     thumb.thumbnail((260,260))
                     st.image(thumb, use_container_width=True)
-                except Exception as e:
-                    st.write("Image error")
-                    print("[DEBUG] image open failed", e)
-            else:
-                st.image(Image.new("RGB",(260,260),(240,240,240)), use_container_width=True)
-
-            st.markdown(f"**{row['name'][:60]}**")
-            st.markdown(f"ID: `{row['id']}`")
-            st.markdown(f"Color: {row.get('color','N/A')} • Price: ₹{row.get('price','N/A')}")
-            if st.button(f"View → {row['id']}", key=f"v{row['id']}"):
+                except Exception:
+                    pass # Don't show anything if error
+            
+            if st.button(f"View Details", key=f"v{row['id']}"):
                 st.session_state["selected_id"] = str(row["id"])
+            
+            st.markdown("---") # Separator between rows if needed, or just rely on card
         idx += 1
 
 with right:
@@ -118,28 +197,35 @@ with right:
     selected = st.session_state.get("selected_id")
     prod = df[df["id"].astype(str)==str(selected)]
     if prod.empty:
-        st.warning("No product selected.")
+        st.info("Select a product to view details.")
     else:
         p = prod.iloc[0]
-        # hero image
+        
+        # Details Container
+        st.markdown(f"""
+        <div style="background: white; padding: 20px; border-radius: 10px; border: 1px solid #eee;">
+            <h2 style="margin-top:0;">{p['name']}</h2>
+            <p><b>ID:</b> <code>{p['id']}</code></p>
+            <p><b>Color:</b> {p.get('color','N/A')}</p>
+            <p><b>Price:</b> <span style="color: #28a745; font-weight: bold;">₹{p.get('price','N/A')}</span></p>
+            <p><b>Status:</b> {p.get('predicted_status', 'Unknown')}</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Hero image - ONLY show if exists
         img_path = resolve_path(UPLOADS, p.get("image_file"))
-        if img_path:
+        if img_path and os.path.exists(img_path):
             try:
                 img = Image.open(img_path)
                 st.image(img, use_container_width=True)
             except Exception:
-                st.image(Image.new("RGB",(600,400),(250,250,250)), use_container_width=True)
-        else:
-            st.image(Image.new("RGB",(600,400),(250,250,250)), use_container_width=True)
+                pass
 
-        st.markdown(f"### {p['name']}")
-        st.markdown(f"**ID:** `{p['id']}`")
-        st.markdown(f"**Color:** {p.get('color','N/A')}")
-        st.markdown(f"**Price:** ₹{p.get('price','N/A')}")
-        st.markdown("**Blockchain hashes (mock):**")
+        st.markdown("### Blockchain Verification")
         st.code(f"meta_hash: {p.get('meta_hash')}")
         st.code(f"pid_hash: {p.get('pid_hash')}")
         st.code(f"short_hash: {p.get('short_hash')}")
+        
         st.markdown("---")
         # progress bar for tracking stage
         tracking = p.get("tracking", [])
@@ -177,11 +263,11 @@ with right:
             try:
                 # clickable link
                 st.markdown(f"[Open tracking page]({tracking_url})")
-                st.write(tracking_url)
+                st.caption(tracking_url)
             except Exception:
                 st.write(tracking_url)
         else:
-            st.info("No 'tracking_url' present in metadata. Backend must set tracking_url for QR scanning to open directly.")
+            st.info("No 'tracking_url' present in metadata.")
 
         st.markdown("---")
 
@@ -205,7 +291,7 @@ with right:
             try:
                 im = Image.open(qr_path)
                 # show nicely sized QR
-                st.image(im.resize((300,300)), use_column_width=False)
+                st.image(im.resize((300,300)), use_container_width=False)
             except Exception:
                 st.warning("QR image exists but couldn't be opened.")
             # download button
@@ -215,7 +301,7 @@ with right:
             except Exception:
                 st.write("Download not available.")
         else:
-            st.info("QR not found in ./qr/. Ensure backend generated QR images and that metadata points to them.")
+            st.info("QR not found in ./qr/. Ensure backend generated QR images.")
 
 st.markdown("---")
 st.caption("UI: Professional catalog + timeline • Backend: demo AI+Keccak+QR generator")

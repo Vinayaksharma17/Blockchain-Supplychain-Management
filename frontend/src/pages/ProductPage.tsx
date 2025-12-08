@@ -8,6 +8,8 @@ export const ProductPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isEditing, setIsEditing] = useState(false);
+    const [trackingHistory, setTrackingHistory] = useState<any[]>([]);
 
     useEffect(() => {
         if (!id) return;
@@ -15,6 +17,11 @@ export const ProductPage: React.FC = () => {
             try {
                 const result = await api.getProduct(id);
                 setProduct(result);
+                // Initialize tracking history from product or default
+                setTrackingHistory(result.tracking_history || [
+                    { status: 'Manufactured', date: '2025-01-15', loc: 'Factory A', completed: true },
+                    { status: 'Quality Check', date: '2025-01-16', loc: 'Warehouse B', completed: true },
+                ]);
             } catch (error) {
                 console.error("Failed to fetch product", error);
             } finally {
@@ -23,6 +30,35 @@ export const ProductPage: React.FC = () => {
         };
         fetchData();
     }, [id]);
+
+    const handleSaveTracking = async () => {
+        if (!product) return;
+        try {
+            await api.updateTracking(product.id, trackingHistory);
+            setIsEditing(false);
+            // Ideally show a success toast
+        } catch (error) {
+            console.error("Failed to save tracking", error);
+            alert("Failed to save changes");
+        }
+    };
+
+    const updateTrackingStep = (index: number, field: string, value: any) => {
+        const newHistory = [...trackingHistory];
+        newHistory[index] = { ...newHistory[index], [field]: value };
+        setTrackingHistory(newHistory);
+    };
+
+    const addTrackingStep = () => {
+        setTrackingHistory([
+            ...trackingHistory,
+            { status: 'New Step', date: new Date().toISOString().split('T')[0], loc: 'Location', completed: false }
+        ]);
+    };
+
+    const removeTrackingStep = (index: number) => {
+        setTrackingHistory(trackingHistory.filter((_, i) => i !== index));
+    };
 
     if (loading) {
         return (
@@ -125,30 +161,112 @@ export const ProductPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Tracking Section (Mock) - Keeping for web users */}
+                {/* Tracking Section (Editable) */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-                    <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                        <Activity className="w-6 h-6 mr-2 text-blue-600" />
-                        Supply Chain Tracking
-                    </h3>
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-xl font-bold text-gray-900 flex items-center">
+                            <Activity className="w-6 h-6 mr-2 text-blue-600" />
+                            Supply Chain Tracking
+                        </h3>
+                        <button
+                            onClick={() => {
+                                if (isEditing) {
+                                    handleSaveTracking();
+                                } else {
+                                    setIsEditing(true);
+                                }
+                            }}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isEditing
+                                ? 'bg-green-600 text-white hover:bg-green-700'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                        >
+                            {isEditing ? 'Save Changes' : 'Edit Tracking'}
+                        </button>
+                    </div>
 
                     <div className="relative pl-2">
                         <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
 
                         <div className="space-y-8 relative">
-                            {[
-                                { status: 'Manufactured', date: '2025-01-15', loc: 'Factory A' },
-                                { status: 'Quality Check', date: '2025-01-16', loc: 'Warehouse B' },
-                                { status: 'In Transit', date: '2025-01-18', loc: 'Logistics Hub' },
-                            ].map((step, idx) => (
-                                <div key={idx} className="flex items-start ml-10 relative">
-                                    <div className="absolute -left-[2.65rem] bg-blue-600 w-4 h-4 rounded-full border-4 border-white shadow-sm"></div>
-                                    <div>
-                                        <h4 className="font-semibold text-gray-900">{step.status}</h4>
-                                        <p className="text-sm text-gray-500">{step.loc} • {step.date}</p>
+                            {(trackingHistory || []).map((step, idx) => (
+                                <div key={idx} className="flex items-start ml-10 relative group">
+                                    <div className={`absolute -left-[2.65rem] w-4 h-4 rounded-full border-4 border-white shadow-sm ${step.completed ? 'bg-blue-600' : 'bg-gray-300'
+                                        }`}></div>
+
+                                    <div className="flex-1">
+                                        {isEditing ? (
+                                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 space-y-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                    <div>
+                                                        <label className="block text-xs font-medium text-gray-500 mb-1">Status</label>
+                                                        <input
+                                                            type="text"
+                                                            value={step.status}
+                                                            onChange={(e) => updateTrackingStep(idx, 'status', e.target.value)}
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                                            placeholder="e.g. In Transit"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-medium text-gray-500 mb-1">Date</label>
+                                                        <input
+                                                            type="text"
+                                                            value={step.date}
+                                                            onChange={(e) => updateTrackingStep(idx, 'date', e.target.value)}
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                                            placeholder="YYYY-MM-DD"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                    <div>
+                                                        <label className="block text-xs font-medium text-gray-500 mb-1">Location</label>
+                                                        <input
+                                                            type="text"
+                                                            value={step.loc}
+                                                            onChange={(e) => updateTrackingStep(idx, 'loc', e.target.value)}
+                                                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                                            placeholder="e.g. Warehouse A"
+                                                        />
+                                                    </div>
+                                                    <div className="flex items-end">
+                                                        <label className="flex items-center space-x-2 cursor-pointer">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={step.completed}
+                                                                onChange={(e) => updateTrackingStep(idx, 'completed', e.target.checked)}
+                                                                className="rounded text-blue-600 focus:ring-blue-500 h-4 w-4"
+                                                            />
+                                                            <span className="text-sm text-gray-700">Completed</span>
+                                                        </label>
+                                                        <button
+                                                            onClick={() => removeTrackingStep(idx)}
+                                                            className="ml-auto text-red-500 text-xs hover:underline"
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                <h4 className="font-semibold text-gray-900">{step.status}</h4>
+                                                <p className="text-sm text-gray-500">{step.loc} • {step.date}</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))}
+
+                            {isEditing && (
+                                <button
+                                    onClick={addTrackingStep}
+                                    className="ml-10 flex items-center text-sm text-blue-600 hover:text-blue-700 font-medium"
+                                >
+                                    + Add Step
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>

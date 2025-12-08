@@ -44,13 +44,12 @@ export const TrackingPage: React.FC = () => {
         );
     }
 
-    // Mock tracking steps - in a real app, this would come from the backend
-    const trackingSteps = [
-        { status: 'Manufactured', date: '2025-01-15', loc: 'Factory A', icon: Package, completed: true },
-        { status: 'Quality Check', date: '2025-01-16', loc: 'Warehouse B', icon: CheckCircle, completed: true },
-        { status: 'In Transit', date: '2025-01-18', loc: 'Logistics Hub', icon: Truck, completed: true },
-        { status: 'Delivered', date: 'Expected 2025-01-20', loc: 'Customer', icon: MapPin, completed: false },
-    ];
+    // Use tracking history from product or mock if empty (for demo purposes)
+    const trackingSteps = product.tracking_history && product.tracking_history.length > 0
+        ? product.tracking_history
+        : [
+            { status: 'No Tracking Info', date: '-', loc: '-', completed: false }
+        ];
 
     return (
         <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
@@ -60,8 +59,8 @@ export const TrackingPage: React.FC = () => {
                     <div className="flex items-center justify-between mb-4">
                         <h1 className="text-xl font-bold text-gray-900">Tracking Information</h1>
                         <div className={`px-3 py-1 rounded-full text-xs font-medium ${product.predicted_status === 'Authentic'
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-yellow-100 text-yellow-800'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-yellow-100 text-yellow-800'
                             }`}>
                             {product.predicted_status}
                         </div>
@@ -89,8 +88,15 @@ export const TrackingPage: React.FC = () => {
                         <div className="absolute left-6 top-2 bottom-4 w-0.5 bg-gray-100"></div>
 
                         <div className="space-y-8">
-                            {trackingSteps.map((step, idx) => {
-                                const Icon = step.icon;
+                            {trackingSteps.map((step: any, idx: number) => {
+                                // Simple icon mapping based on status keywords
+                                let Icon = Activity;
+                                const statusLower = step.status.toLowerCase();
+                                if (statusLower.includes('manufacture')) Icon = Package;
+                                else if (statusLower.includes('quality') || statusLower.includes('check')) Icon = CheckCircle;
+                                else if (statusLower.includes('transit') || statusLower.includes('ship')) Icon = Truck;
+                                else if (statusLower.includes('deliver')) Icon = MapPin;
+
                                 return (
                                     <div key={idx} className="relative flex items-start group">
                                         <div className={`absolute left-0 p-2 rounded-full border-2 z-10 ${step.completed

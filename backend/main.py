@@ -40,6 +40,14 @@ class Product(BaseModel):
     qr_file: Optional[str] = None
     tracking_url: Optional[str] = None
     image_file: Optional[str] = None
+    tracking_history: Optional[List[dict]] = []
+
+class TrackingUpdate(BaseModel):
+    tracking_history: List[dict]
+
+def save_products(products):
+    with open(META_FILE, "w", encoding="utf-8") as f:
+        json.dump(products, f, indent=2, ensure_ascii=False)
 
 def load_products():
     if not os.path.exists(META_FILE):
@@ -84,6 +92,19 @@ async def get_product(product_id: str):
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     return product
+
+@app.put("/api/products/{product_id}/tracking")
+async def update_tracking(product_id: str, update: TrackingUpdate):
+    products = load_products()
+    product_idx = next((i for i, p in enumerate(products) if str(p["id"]) == product_id), -1)
+    
+    if product_idx == -1:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    products[product_idx]["tracking_history"] = update.tracking_history
+    save_products(products)
+    
+    return {"status": "success", "tracking_history": update.tracking_history}
 
 @app.get("/")
 def read_root():

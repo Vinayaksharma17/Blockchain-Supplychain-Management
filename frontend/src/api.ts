@@ -17,6 +17,12 @@ export interface Product {
     qr_file?: string;
     tracking_url?: string;
     image_file?: string;
+    tracking_history?: {
+        status: string;
+        date: string;
+        loc: string;
+        completed: boolean;
+    }[];
 }
 
 export interface PaginatedResponse {
@@ -36,6 +42,12 @@ export const api = {
     },
     getProduct: async (id: string) => {
         const response = await axios.get<Product>(`${API_BASE_URL}/api/products/${id}`);
+        return response.data;
+    },
+    updateTracking: async (id: string, tracking_history: any[]) => {
+        const response = await axios.put(`${API_BASE_URL}/api/products/${id}/tracking`, {
+            tracking_history
+        });
         return response.data;
     },
     getImageUrl: (path?: string) => {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../api';
-import type { Product, PaginatedResponse } from '../api';
+import type { PaginatedResponse } from '../api';
 import { ProductCard } from '../components/ProductCard';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 

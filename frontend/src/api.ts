@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Dynamically determine backend URL based on where frontend is served
-const API_BASE_URL = `http://${window.location.hostname}:8000`;
+// Dynamically determine backend URL from environment variables
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export interface Product {
     id: string;

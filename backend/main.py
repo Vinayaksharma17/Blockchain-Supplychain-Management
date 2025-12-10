@@ -1,10 +1,11 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-import json
 import os
-from typing import List, Optional
-from pydantic import BaseModel
+from typing import Optional
+
+from .models import Product, TrackingUpdate
+from .repository import ProductRepository
 
 app = FastAPI(title="Garment SCM API")
 
@@ -20,40 +21,12 @@ app.add_middleware(
 # Paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(BASE_DIR, "data")
-META_FILE = os.path.join(DATA_DIR, "products_metadata.json")
+
+# Repository
+repo = ProductRepository(DATA_DIR)
 
 # Serve static files (images, qr)
 app.mount("/static", StaticFiles(directory=DATA_DIR), name="static")
-
-# Models
-class Product(BaseModel):
-    id: str
-    name: str
-    color: str
-    price: float
-    year: int
-    meta_hash: str
-    pid_hash: str
-    short_hash: str
-    predicted_status: str
-    pred_proba: float
-    qr_file: Optional[str] = None
-    tracking_url: Optional[str] = None
-    image_file: Optional[str] = None
-    tracking_history: Optional[List[dict]] = []
-
-class TrackingUpdate(BaseModel):
-    tracking_history: List[dict]
-
-def save_products(products):
-    with open(META_FILE, "w", encoding="utf-8") as f:
-        json.dump(products, f, indent=2, ensure_ascii=False)
-
-def load_products():
-    if not os.path.exists(META_FILE):
-        return []
-    with open(META_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
 
 @app.get("/api/products", response_model=dict)
 async def get_products(
@@ -61,7 +34,7 @@ async def get_products(
     limit: int = 12, 
     search: Optional[str] = None
 ):
-    all_products = load_products()
+    all_products = repo.get_all()
     
     # Filter
     if search:
@@ -87,22 +60,17 @@ async def get_products(
 
 @app.get("/api/products/{product_id}", response_model=Product)
 async def get_product(product_id: str):
-    products = load_products()
-    product = next((p for p in products if str(p["id"]) == product_id), None)
+    product = repo.get_by_id(product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     return product
 
 @app.put("/api/products/{product_id}/tracking")
 async def update_tracking(product_id: str, update: TrackingUpdate):
-    products = load_products()
-    product_idx = next((i for i, p in enumerate(products) if str(p["id"]) == product_id), -1)
+    success = repo.update_tracking(product_id, update.tracking_history)
     
-    if product_idx == -1:
+    if not success:
         raise HTTPException(status_code=404, detail="Product not found")
-    
-    products[product_idx]["tracking_history"] = update.tracking_history
-    save_products(products)
     
     return {"status": "success", "tracking_history": update.tracking_history}
 

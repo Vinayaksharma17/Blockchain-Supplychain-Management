@@ -1,4 +1,4 @@
-.PHONY: build up down logs init clean rebuild dev
+.PHONY: build up down logs init clean rebuild dev watch
 
 # Default HOST_IP to localhost if not provided
 HOST_IP ?= localhost
@@ -41,3 +41,13 @@ rebuild:
 # Development mode with hot reload
 dev:
 	docker-compose -f docker-compose.dev.yml up
+
+# Watch mode - uses Docker Compose watch for auto-sync and rebuild
+# Requires Docker Compose v2.22.0+ with watch support
+watch:
+	docker-compose -f docker-compose.dev.yml up --watch
+
+# Alternative watch using docker compose watch command directly
+watch-detached:
+	docker-compose -f docker-compose.dev.yml up -d
+	docker-compose -f docker-compose.dev.yml watch

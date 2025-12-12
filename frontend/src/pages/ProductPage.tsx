@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { api } from '../api'
 import type { Product } from '../api'
 import { ArrowLeft, ShieldCheck, Box, Activity, ImageOff } from 'lucide-react'
+import { SimilarProducts } from '../components/SimilarProducts'
 
 export const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -376,6 +377,12 @@ export const ProductPage: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Similar Products Section */}
+        <SimilarProducts
+          productName={product.name}
+          currentProductId={product.id}
+        />
       </div>
     </div>
   )

@@ -111,4 +111,34 @@ export const api = {
     // Otherwise, generate a placeholder based on product ID
     return api.getPlaceholderImage(product, size)
   },
+
+  /**
+   * Get similar products based on search query (product name keywords).
+   * Excludes the current product from results.
+   */
+  getSimilarProducts: async (
+    productName: string,
+    currentProductId: string,
+    limit: number = 6
+  ): Promise<Product[]> => {
+    // Extract meaningful keywords from product name (first 2-3 words)
+    const keywords = productName
+      .split(/\s+/)
+      .filter((word) => word.length > 2) // Filter out short words
+      .slice(0, 2) // Take first 2 keywords
+      .join(' ')
+
+    if (!keywords) return []
+
+    try {
+      const response = await api.getProducts(1, limit + 1, keywords)
+      // Filter out the current product and limit results
+      return response.data
+        .filter((p) => p.id !== currentProductId)
+        .slice(0, limit)
+    } catch (error) {
+      console.error('Failed to fetch similar products', error)
+      return []
+    }
+  },
 }

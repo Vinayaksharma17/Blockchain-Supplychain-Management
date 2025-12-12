@@ -1,5 +1,8 @@
 .PHONY: build up down logs init clean rebuild dev
 
+# Default HOST_IP to localhost if not provided
+HOST_IP ?= localhost
+
 # Build all containers
 build:
 	docker-compose build
@@ -17,9 +20,12 @@ logs:
 	docker-compose logs -f
 
 # Initialize data (run data processor and QR generator)
+# Usage: make init HOST_IP=192.168.1.100 (or any IP accessible from mobile devices)
+# On macOS, you can auto-detect with: make init HOST_IP=$$(ipconfig getifaddr en0)
+# On Linux, you can use: make init HOST_IP=$$(hostname -I | awk '{print $$1}')
 init:
 	docker build -f Dockerfile.init -t scm-init .
-	docker run --rm -v $(PWD)/backend/data:/app/backend/data -e HOST_IP=$$(ipconfig getifaddr en0 2>/dev/null || echo "localhost") scm-init
+	docker run --rm -v $(PWD)/backend/data:/app/backend/data -e HOST_IP=$(HOST_IP) scm-init
 
 # Clean up
 clean:

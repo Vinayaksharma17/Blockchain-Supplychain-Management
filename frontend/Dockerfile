@@ -3,11 +3,14 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Configurable npm registry (defaults to official registry)
+ARG NPM_REGISTRY=https://registry.npmjs.org
+
 # Copy package files
 COPY package*.json ./
 
 # Configure npm for better network reliability and install dependencies
-RUN npm config set registry https://registry.npmmirror.com && \
+RUN npm config set registry ${NPM_REGISTRY} && \
     npm config set fetch-retries 5 && \
     npm config set fetch-retry-mintimeout 20000 && \
     npm config set fetch-retry-maxtimeout 120000 && \

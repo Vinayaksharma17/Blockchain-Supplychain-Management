@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     build:
@@ -15,6 +13,15 @@ services:
     command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
     networks:
       - scm-network
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /app/backend
+          ignore:
+            - __pycache__/
+        - action: rebuild
+          path: ./requirements.txt
 
   frontend:
     build:
@@ -31,6 +38,16 @@ services:
       - backend
     networks:
       - scm-network
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend/src
+          target: /app/src
+        - action: sync
+          path: ./frontend/public
+          target: /app/public
+        - action: rebuild
+          path: ./frontend/package.json
 
 networks:
   scm-network:

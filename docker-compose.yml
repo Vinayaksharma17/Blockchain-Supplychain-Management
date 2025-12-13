@@ -19,7 +19,9 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=http://localhost:8000
+        # Use your machine's IP address for mobile access
+        # Change this IP when your network changes
+        - VITE_API_URL=${VITE_API_URL:-http://192.168.29.217:8000}
     ports:
       - '5173:80'
     depends_on:

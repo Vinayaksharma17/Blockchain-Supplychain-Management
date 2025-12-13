@@ -1,6 +1,7 @@
 import os
 import json
 import argparse
+import socket
 import qrcode
 from qrcode.constants import ERROR_CORRECT_M
 
@@ -17,8 +18,38 @@ QR_BOX = 6
 QR_BORDER = 2
 # ----------------------------
 
-def generate_qrs(host_ip):
-    print(f"🚀 Starting QR Generation for Host: {host_ip}")
+def get_local_ip():
+    """Get the local IP address of the machine."""
+    try:
+        # Create a socket and connect to an external server to get local IP
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "localhost"
+
+def generate_qrs(host_ip=None, port=5173, base_url=None):
+    """
+    Generate QR codes for all products.
+    
+    Args:
+        host_ip: IP address for the frontend (auto-detected if not provided)
+        port: Port number for the frontend (default: 5173 for Vite dev server)
+        base_url: Full base URL (overrides host_ip and port if provided)
+                  e.g., "https://your-domain.com" for production
+    """
+    # Determine the base URL
+    if base_url:
+        tracking_base = base_url.rstrip('/')
+        print(f"🚀 Starting QR Generation with Base URL: {tracking_base}")
+    else:
+        if not host_ip:
+            host_ip = get_local_ip()
+            print(f"🔍 Auto-detected IP: {host_ip}")
+        tracking_base = f"http://{host_ip}:{port}"
+        print(f"🚀 Starting QR Generation for: {tracking_base}")
     
     if not os.path.exists(META_FILE):
         print("❌ Metadata file not found. Run data_processor.py first.")
@@ -36,8 +67,7 @@ def generate_qrs(host_ip):
         pid = p["id"]
         
         # URL pointing to Frontend Tracking Page
-        # Assuming Frontend runs on port 5173 (Vite default)
-        tracking_url = f"http://{host_ip}:5173/tracking/{pid}"
+        tracking_url = f"{tracking_base}/tracking/{pid}"
         
         qr_filename = f"{pid}.png"
         qr_path = os.path.join(QR_DIR, qr_filename)
@@ -66,11 +96,13 @@ def generate_qrs(host_ip):
     with open(META_FILE, "w", encoding="utf-8") as f:
         json.dump(updated_products, f, indent=2, ensure_ascii=False)
 
-    print(f"✅ QR Generation Complete. Metadata updated with URL: http://{host_ip}:5173")
+    print(f"✅ QR Generation Complete. Tracking URL base: {tracking_base}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate QR codes for products.")
-    parser.add_argument("--ip", type=str, required=True, help="Host IP address for tracking URLs")
+    parser.add_argument("--ip", type=str, help="Host IP address for tracking URLs (auto-detected if not provided)")
+    parser.add_argument("--port", type=int, default=5173, help="Frontend port (default: 5173)")
+    parser.add_argument("--url", type=str, help="Full base URL (e.g., https://your-domain.com) - overrides --ip and --port")
     args = parser.parse_args()
     
-    generate_qrs(args.ip)
+    generate_qrs(host_ip=args.ip, port=args.port, base_url=args.url)

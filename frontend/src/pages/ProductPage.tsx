@@ -9,14 +9,14 @@ import {
   Box,
   Activity,
   Star,
-  Truck,
+  // Truck,
   MapPin,
-  RotateCcw,
-  Shield,
+  // RotateCcw,
+  // Shield,
   CheckCircle,
   Clock,
-  Share2,
-  Heart,
+  // Share2,
+  // Heart,
   ChevronRight,
   ImageOff,
 } from 'lucide-react'
@@ -35,7 +35,7 @@ export const ProductPage: React.FC = () => {
   }
   const [trackingHistory, setTrackingHistory] = useState<TrackingStep[]>([])
   const [imageError, setImageError] = useState(false)
-  const [quantity, setQuantity] = useState(1)
+  // const [quantity, setQuantity] = useState(1)
   const [selectedTab, setSelectedTab] = useState<
     'description' | 'blockchain' | 'tracking'
   >('description')
@@ -184,7 +184,7 @@ export const ProductPage: React.FC = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-3">
+              {/* <div className="flex gap-3">
                 <button className="flex-1 flex items-center justify-center gap-2 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                   <Heart className="w-5 h-5" />
                   Add to List
@@ -193,7 +193,7 @@ export const ProductPage: React.FC = () => {
                   <Share2 className="w-5 h-5" />
                   Share
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -319,12 +319,12 @@ export const ProductPage: React.FC = () => {
           {/* Buy Box */}
           <div className="lg:col-span-3">
             <div className="bg-white rounded-lg p-4 sticky top-24">
-              <div className="text-2xl font-medium text-[#0f1111] mb-2">
+              {/* <div className="text-2xl font-medium text-[#0f1111] mb-2">
                 ₹{product.price.toLocaleString()}
-              </div>
+              </div> */}
 
               {/* Delivery */}
-              <div className="mb-4">
+              {/* <div className="mb-4">
                 <div className="flex items-center gap-2 text-sm">
                   <Truck className="w-4 h-4 text-[#067D62]" />
                   <span>
@@ -335,15 +335,15 @@ export const ProductPage: React.FC = () => {
                   <MapPin className="w-4 h-4" />
                   <span>Deliver to India</span>
                 </div>
-              </div>
+              </div> */}
 
               {/* Stock */}
-              <p className="text-lg text-[#067D62] font-medium mb-4">
+              {/* <p className="text-lg text-[#067D62] font-medium mb-4">
                 In Stock
-              </p>
+              </p> */}
 
               {/* Quantity */}
-              <div className="flex items-center gap-2 mb-4">
+              {/* <div className="flex items-center gap-2 mb-4">
                 <span className="text-sm">Qty:</span>
                 <select
                   value={quantity}
@@ -356,20 +356,20 @@ export const ProductPage: React.FC = () => {
                     </option>
                   ))}
                 </select>
-              </div>
+              </div> */}
 
               {/* Action Buttons */}
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <button className="w-full bg-[#ffd814] hover:bg-[#f7ca00] text-[#0f1111] font-medium py-2 px-4 rounded-full transition-colors">
                   Add to Cart
                 </button>
                 <button className="w-full bg-[#ffa41c] hover:bg-[#fa8900] text-[#0f1111] font-medium py-2 px-4 rounded-full transition-colors">
                   Buy Now
                 </button>
-              </div>
+              </div> */}
 
               {/* Secure Transaction */}
-              <div className="mt-4 pt-4 border-t text-xs text-gray-500 space-y-2">
+              {/* <div className="mt-4 pt-4 border-t text-xs text-gray-500 space-y-2">
                 <div className="flex items-center gap-2">
                   <Shield className="w-4 h-4" />
                   <span>Secure transaction</span>
@@ -378,7 +378,7 @@ export const ProductPage: React.FC = () => {
                   <RotateCcw className="w-4 h-4" />
                   <span>10 days return policy</span>
                 </div>
-              </div>
+              </div> */}
 
               {/* QR Code */}
               {product.qr_file && (

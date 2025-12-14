@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import {
   Search,
   Menu,
-  ShoppingCart,
   MapPin,
   ChevronDown,
   Package,
@@ -105,7 +104,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Right Side Icons */}
-          <div className="hidden lg:flex items-center gap-2">
+          {/* <div className="hidden lg:flex items-center gap-2">
             <div className="p-2 border border-transparent hover:border-white rounded cursor-pointer text-white">
               <div className="text-xs text-gray-300">Hello, Sign in</div>
               <div className="font-bold text-sm flex items-center gap-1">
@@ -131,7 +130,7 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
               <span className="font-bold text-sm">Cart</span>
             </div>
-          </div>
+          </div> */}
 
           {/* Mobile Menu */}
           <button className="lg:hidden p-2 text-white">
@@ -141,20 +140,20 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Bottom Nav Bar */}
         <nav className="bg-[#232f3e] px-4 py-2 flex items-center gap-4 overflow-x-auto text-white text-sm">
-          <button className="flex items-center gap-1 hover:text-[#ff9900] whitespace-nowrap font-bold">
+          {/* <button className="flex items-center gap-1 hover:text-[#ff9900] whitespace-nowrap font-bold">
             <Menu className="w-5 h-5" />
             All
-          </button>
-          <Link to="/" className="hover:text-[#ff9900] whitespace-nowrap">
+          </button> */}
+          {/* <Link to="/" className="hover:text-[#ff9900] whitespace-nowrap">
             Today's Deals
-          </Link>
-          <Link to="/" className="hover:text-[#ff9900] whitespace-nowrap">
+          </Link> */}
+          {/* <Link to="/" className="hover:text-[#ff9900] whitespace-nowrap">
             Customer Service
-          </Link>
-          <Link to="/" className="hover:text-[#ff9900] whitespace-nowrap">
+          </Link> */}
+          {/* <Link to="/" className="hover:text-[#ff9900] whitespace-nowrap">
             New Arrivals
-          </Link>
-          <Link to="/" className="hover:text-[#ff9900] whitespace-nowrap">
+          </Link> */}
+          {/* <Link to="/" className="hover:text-[#ff9900] whitespace-nowrap">
             Authentic Products
           </Link>
           <Link to="/" className="hover:text-[#ff9900] whitespace-nowrap">
@@ -165,7 +164,7 @@ export const Header: React.FC<HeaderProps> = ({
             className="hover:text-[#ff9900] whitespace-nowrap text-[#ff9900] font-bold"
           >
             Blockchain Verified
-          </Link>
+          </Link> */}
         </nav>
       </header>
     </>

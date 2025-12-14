@@ -10,8 +10,8 @@ import {
   Filter,
   Grid,
   ShieldCheck,
-  Sparkles,
-  TrendingUp,
+  // Sparkles,
+  // TrendingUp,
 } from 'lucide-react'
 
 export const HomePage: React.FC = () => {
@@ -51,9 +51,22 @@ export const HomePage: React.FC = () => {
   const filters = [
     { id: 'all', label: 'All Products', icon: Grid },
     { id: 'authentic', label: 'Verified Only', icon: ShieldCheck },
-    { id: 'deals', label: "Today's Deals", icon: Sparkles },
-    { id: 'trending', label: 'Trending', icon: TrendingUp },
+    // { id: 'deals', label: "Today's Deals", icon: Sparkles },
+    // { id: 'trending', label: 'Trending', icon: TrendingUp },
   ]
+
+  // Filter products based on selected filter
+  const filteredProducts = React.useMemo(() => {
+    if (!data?.data) return []
+
+    if (selectedFilter === 'authentic') {
+      return data.data.filter(
+        (product) => product.predicted_status === 'Authentic'
+      )
+    }
+
+    return data.data
+  }, [data?.data, selectedFilter])
 
   return (
     <div className="min-h-screen flex flex-col bg-[#eaeded]">
@@ -122,7 +135,8 @@ export const HomePage: React.FC = () => {
           <div>
             <h1 className="text-xl font-bold text-[#0f1111]">Results</h1>
             <p className="text-sm text-gray-600">
-              Showing {data?.data.length || 0} of {data?.total || 0} products
+              Showing {filteredProducts.length} of {data?.total || 0} products
+              {selectedFilter === 'authentic' && ' (Verified Only)'}
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -158,12 +172,12 @@ export const HomePage: React.FC = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {data?.data.map((product) => (
+              {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
 
-            {data?.data.length === 0 && (
+            {filteredProducts.length === 0 && (
               <div className="text-center py-20 bg-white rounded-lg">
                 <div className="text-6xl mb-4">🔍</div>
                 <h3 className="text-xl font-bold text-gray-800 mb-2">

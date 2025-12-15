@@ -116,7 +116,7 @@ export const TrackingPage: React.FC = () => {
 
   const productType = getProductType(product.name)
   const brand = getBrand(product.name)
-  const imageUrl = api.getProductImage(product, 400)
+  const imageUrl = api.getProductImage(product)
   const isAuthentic = product.predicted_status === 'Authentic'
 
   return (

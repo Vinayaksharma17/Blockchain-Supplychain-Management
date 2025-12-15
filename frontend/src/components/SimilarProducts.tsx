@@ -15,7 +15,8 @@ interface ProductCardMiniProps {
 
 const ProductCardMini: React.FC<ProductCardMiniProps> = ({ product }) => {
   const [imageError, setImageError] = useState(false)
-  const imageUrl = api.getProductImage(product, 300)
+  // const imageUrl = api.getProductImage(product, 300)
+  const imageUrl = api.getProductImage(product)
 
   return (
     <Link

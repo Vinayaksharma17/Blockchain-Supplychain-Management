@@ -170,7 +170,7 @@ export const ProductPage: React.FC = () => {
               <div className="aspect-square bg-[#f7f7f7] rounded-lg flex items-center justify-center mb-4">
                 {!imageError ? (
                   <img
-                    src={api.getProductImage(product, 800)}
+                    src={api.getProductImage(product)}
                     alt={product.name}
                     className="max-h-full max-w-full object-contain"
                     onError={() => setImageError(true)}

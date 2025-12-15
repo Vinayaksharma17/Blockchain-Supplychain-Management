@@ -72,44 +72,27 @@ export const api = {
   },
   getImageUrl: (path?: string) => {
     if (!path) return undefined
-    // If path is absolute or external, return as is (though backend serves local files)
+    // If path is absolute or external, return as is
     if (path.startsWith('http')) return path
     // Remove 'backend/data/' prefix if present to match static mount
-    const cleanPath = path
-      .replace('backend/data/', '')
-      .replace('uploads/', 'uploads/')
-    // Actually, backend mounts DATA_DIR at /static
-    // If path is "uploads/foo.jpg", url is /static/uploads/foo.jpg
+    const cleanPath = path.replace('backend/data/', '')
+    // Backend mounts DATA_DIR at /static
+    // e.g., "images/10017413.jpg" → "http://localhost:8000/static/images/10017413.jpg"
     return `${API_BASE_URL}/static/${cleanPath}`
   },
 
   /**
-   * Generate a placeholder image URL based on product attributes.
-   * Uses picsum.photos for random product images or ui-avatars for color-based placeholders.
-   * This eliminates the need to manually add images during development.
-   */
-  getPlaceholderImage: (
-    product: { id: string; name: string; color: string },
-    size: number = 400
-  ) => {
-    // Option 1: Use product ID as seed for consistent random images
-    // This gives each product a unique but consistent placeholder
-    const seed = parseInt(product.id) || product.id.charCodeAt(0)
-    return `https://picsum.photos/seed/${seed}/${size}/${size}`
-  },
-
-  /**
    * Get the best available image for a product.
-   * Falls back to placeholder if no image_file is set.
+   * Expects images stored in backend/data/images/{product_id}.jpg
+   * Falls back to showing no image if image_file is not set.
    */
-  getProductImage: (product: Product, size: number = 400) => {
-    // If product has an actual image, use it
+  getProductImage: (product: Product) => {
+    // If product has an image_file set, use it
     if (product.image_file) {
-      const url = api.getImageUrl(product.image_file)
-      if (url) return url
+      return api.getImageUrl(product.image_file)
     }
-    // Otherwise, generate a placeholder based on product ID
-    return api.getPlaceholderImage(product, size)
+    // No image available
+    return undefined
   },
 
   /**
